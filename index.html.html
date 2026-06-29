@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AES-256-CBC Encryption Debugger</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/tabler-icons.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #1a1a1a;
+        }
+
+        .wrapper {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 24px;
+            border-radius: 12px 12px 0 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header h1 i {
+            font-size: 28px;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #666;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        textarea, input[type="text"] {
+            padding: 12px 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            background: #f8f8f8;
+            color: #1a1a1a;
+            min-height: 44px;
+            resize: vertical;
+            transition: all 0.2s;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea::placeholder, input[type="text"]::placeholder {
+            color: #999;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-row > textarea {
+            flex: 1;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 18px;
+            border: 1.5px solid #667eea;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            height: 40px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: white;
+            color: #667eea;
+            border-color: #667eea;
+        }
+
+        button.secondary:hover {
+            background: #f0f4ff;
+        }
+
+        .copy-btn {
+            font-size: 13px;
+            padding: 6px 12px;
+            height: auto;
+            border: 1px solid #e0e0e0;
+            background: white;
+            color: #1a1a1a;
+            border-radius: 6px;
+        }
+
+        .copy-btn:hover {
+            background: #f8f8f8;
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .output-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .output-box {
+            background: #f0f4ff;
+            border: 1px solid #d0d8f0;
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            padding: 14px;
+            min-height: 80px;
+            max-height: 500px;
+            overflow-y: auto;
+            word-break: break-word;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #1a1a1a;
+        }
+
+        .output-box.error {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .output-box.success {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .status {
+            font-size: 14px;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+            background: #f0fdf4;
+            color: #065f46;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .status.error {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+            color: #7f1d1d;
+        }
+
+        .status i {
+            font-size: 18px;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 8px 0;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 13px;
+            color: #1e40af;
+            line-height: 1.5;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            .header {
+                padding: 16px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .container {
+                padding: 16px;
+                gap: 16px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .copy-btn {
+                align-self: stretch;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .divider-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 16px 0 8px 0;
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .divider-label::before,
+        .divider-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <h1>
+                <i class="ti ti-lock"></i>
+                Encryption Debugger
+            </h1>
+            <p>AES-256-CBC decryption tool for Dhan trading terminal</p>
+        </div>
+
+        <div class="container">
+            <div class="info-box">
+                <strong>ℹ️ How to use:</strong>
+                Paste your aesKey, encrypted data, and IV, then click Decrypt to view the original payload.
+            </div>
+
+            <div class="section">
+                <label class="label">
+                    <i class="ti ti-key" style="font-size: 14px; margin-right: 4px;"></i>
+                    LSKey (Base64)
+                </label>
+                <textarea id="lskey" placeholder="Paste your base64 aesKey here..." rows="2" spellcheck="false"></textarea>
+            </div>
+
+            <div class="section">
+                <label class="label">
+                    <i class="ti ti-lock" style="font-size: 14px; margin-right: 4px;"></i>
+                    Encrypted Data (Base64)
+                </label>
+                <textarea id="encryptedData" placeholder="Paste encrypted data (base64 ciphertext)..." rows="3" spellcheck="false"></textarea>
+            </div>
+
+            <div class="section">
+                <label class="label">
+                    <i class="ti ti-vector-triangle" style="font-size: 14px; margin-right: 4px;"></i>
+                    IV (Base64)
+                </label>
+                <textarea id="iv" placeholder="Paste the IV (base64)..." rows="2" spellcheck="false"></textarea>
+            </div>
+
+            <div class="button-group">
+                <button onclick="decrypt()">
+                    <i class="ti ti-lock-open"></i>
+                    Decrypt
+                </button>
+                <button class="secondary" onclick="clearAll()">
+                    <i class="ti ti-trash"></i>
+                    Clear All
+                </button>
+            </div>
+
+            <div id="statusContainer"></div>
+
+            <div class="output-section hidden" id="outputContainer">
+                <div class="divider-label">Result</div>
+                <div class="output-box success" id="output"></div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="copy-btn" onclick="copyDecrypted()">
+                        <i class="ti ti-copy"></i>
+                        Copy to clipboard
+                    </button>
+                    <button class="copy-btn" onclick="downloadDecrypted()">
+                        <i class="ti ti-download"></i>
+                        Download
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        function decrypt() {
+            const statusContainer = document.getElementById('statusContainer');
+            const outputContainer = document.getElementById('outputContainer');
+            const outputBox = document.getElementById('output');
+
+            statusContainer.innerHTML = '';
+            outputContainer.classList.add('hidden');
+
+            try {
+                const lskeyValue = document.getElementById('lskey').value.trim();
+                const encryptedValue = document.getElementById('encryptedData').value.trim();
+                const ivValue = document.getElementById('iv').value.trim();
+
+                if (!lskeyValue) {
+                    throw new Error('LSKey is required');
+                }
+                if (!encryptedValue) {
+                    throw new Error('Encrypted data is required');
+                }
+                if (!ivValue) {
+                    throw new Error('IV is required');
+                }
+
+                const key = CryptoJS.enc.Base64.parse(lskeyValue);
+                const iv = CryptoJS.enc.Base64.parse(ivValue);
+
+                const decrypted = CryptoJS.AES.decrypt(encryptedValue, key, {
+                    iv: iv,
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7,
+                });
+
+                const decryptedString = decrypted.toString(CryptoJS.enc.Utf8);
+
+                if (!decryptedString) {
+                    throw new Error('Decryption failed - verify your key, encrypted data, and IV are correct');
+                }
+
+                let parsed;
+                try {
+                    parsed = JSON.parse(decryptedString);
+                    const formatted = JSON.stringify(parsed, null, 2);
+                    outputBox.textContent = formatted;
+                } catch (e) {
+                    outputBox.textContent = decryptedString;
+                }
+
+                outputContainer.classList.remove('hidden');
+
+                const status = document.createElement('div');
+                status.className = 'status';
+                status.innerHTML = '<i class="ti ti-check"></i><span>✓ Decrypted successfully</span>';
+                statusContainer.appendChild(status);
+
+            } catch (error) {
+                const status = document.createElement('div');
+                status.className = 'status error';
+                status.innerHTML = `<i class="ti ti-alert-circle"></i><span>✗ ${error.message}</span>`;
+                statusContainer.appendChild(status);
+
+                outputContainer.classList.add('hidden');
+            }
+        }
+
+        function copyDecrypted() {
+            const output = document.getElementById('output').textContent;
+            navigator.clipboard.writeText(output).then(() => {
+                const btn = event.target.closest('button');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="ti ti-check"></i>Copied!';
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        function downloadDecrypted() {
+            const output = document.getElementById('output').textContent;
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(output));
+            element.setAttribute('download', 'decrypted-payload.json');
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+
+        function clearAll() {
+            document.getElementById('lskey').value = '';
+            document.getElementById('encryptedData').value = '';
+            document.getElementById('iv').value = '';
+            document.getElementById('statusContainer').innerHTML = '';
+            document.getElementById('outputContainer').classList.add('hidden');
+            document.getElementById('lskey').focus();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                decrypt();
+            }
+        });
+    </script>
+</body>
+</html>
